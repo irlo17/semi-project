@@ -222,6 +222,7 @@ public class MemberController {
           
           Random ran = new Random();
           
+          // 인증 다시 하기
           random = Integer.toString(ran.nextInt());
           System.out.println(random);
           
