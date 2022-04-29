@@ -1,0 +1,76 @@
+@charset "UTF-8";
+
+.glyphicon {
+	color: red;
+	font-size: 20px;
+}
+
+.column5 {
+	margin-left: 500px
+}
+
+#search {
+	height: 40px;
+	background: lightgray;
+	font-size: 18px;
+}
+
+#searchb {
+	width: 60px;
+	height: 40px;
+	font-size: 15px;
+}
+
+.limiter .blog__pagination {
+	position: relative;
+	left: 50%;
+	width: 500px;
+	margin-top: 300px;
+}
+
+.form {
+	position: relative;
+	left: 35%
+}
+
+td {
+	text-align: center;
+}
+
+.row100 head {
+	font-size: 20px;
+}
+
+.header__logo {
+	padding: 1%
+}
+
+.btn-danger {
+	color: #fff;
+	background-color: #ED7A64;
+	border-color: #ED7A64;
+}
+
+.btn-danger:hover {
+	color: #fff;
+	background-color: #D6524F;
+	border-color: #D6524F;
+}
+
+a {
+	color: black;
+}
+
+a:hover {
+	color: #D6524F;
+}
+
+tbody>.row100>.cell100 {
+	font-size: 17px;
+	color: black;
+}
+
+thead>.row100>.cell100 {
+	font-size: 20px;
+	font-weight: bold;
+}

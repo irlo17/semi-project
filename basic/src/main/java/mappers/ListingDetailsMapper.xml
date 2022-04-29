@@ -1,0 +1,364 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="listingDetailsDAO">
+
+
+	<!-- 오직 가게정보만 담겨있따 -->
+	<select id="listingDetailsOnlyShopInfo" parameterType="string"
+		resultType="hashmap">
+		Select SHOP_NUMBER shopNumber, SHOP_TITLE shopTitle,
+		SHOP_TEL shopTel, SHOP_PRICE_RANGE shopPriceRange
+		, SHOP_FOOD shopFood
+		, SHOP_PARK shopPark , SHOP_TIME shopTime ,
+		SHOP_HOLIDAY shopHoliday ,
+		SHOP_CONTENT shopContent , SHOP_CREATE_DATE
+		shopCreateDate
+		,
+		SHOP_MODIFY_DATE shopModifyDate , SHOP_ADDRESS shopAddress ,
+		SHOP_ADDRESS_SI shopAddressSi , SHOP_ADDRESS_GU shopAddressGu ,
+		SHOP_ADDRESS_DONG shopAddressDong , SHOP_REALFNAME shopRealfname,
+		SHOP_LAT shopLat, SHOP_LON shopLon
+		from
+		shop
+		where SHOP_NUMBER= #{shopNumber,jdbcType=INTEGER}
+
+	</select>
+
+<select id="listingDetailsGetList2" parameterType="hashmap"
+		resultType="hashmap">
+		
+		<!-- 	SELECT REVIEW_NUMBER reviewNumber, REVIEW_DATE
+		reviewDate, REVIEW_GRADE reviewGrade
+		,REVIEW_CONTENT
+		reviewContent ,SHOP_NUMBER shopNumber ,MEMBER_EMAIL memberEmail
+		,REVIEW_FNAME reviewFname, REVIEW_REALFNAME reviewRealfname
+		FROM (
+			SELECT ROWNUM RN, A.* 
+				FROM (
+						SELECT * 
+						FROM review 
+                        where shop_number =  #{shopNumber,jdbcType=INTEGER }
+						ORDER BY REVIEW_DATE DESC
+						) A
+				)
+				WHERE RN BETWEEN '${reviewStartRow}' AND '${reviewEndRow}' 
+		 -->
+		
+		
+		
+			 SELECT ROWNUM RN, c.REVIEW_NUMBER reviewNumber, to_char(c.REVIEW_DATE,'YYYY MM DD')
+                                	reviewDate, c.REVIEW_GRADE reviewGrade
+                                	, nvl(c.REVIEW_CONTENT,'입력하신 리뷰 내용이 없습니다')
+                                    reviewContent ,c.SHOP_NUMBER shopNumber ,c.MEMBER_EMAIL memberEmail
+                                	,c.REVIEW_FNAME reviewFname, nvl(c.REVIEW_REALFNAME,'삭제금지.png') reviewRealfname, m.member_realfname ,m.MEMBER_NICKNAME
+                                FROM (
+                            	SELECT ROWNUM RN, A.* 
+                            	FROM (
+                        		SELECT * 
+                            	FROM review 
+                                   where shop_number =  #{shopNumber,jdbcType=INTEGER }
+                                	ORDER BY REVIEW_DATE DESC
+                                	) A
+                                	) c inner join member m 
+                                on c.member_email = m.member_email
+                            	WHERE RN BETWEEN '${reviewStartRow}' AND '${reviewEndRow}' 
+		
+		
+		
+		
+		
+		</select>
+
+
+
+
+	<select id="listingDetailsGetList" parameterType="hashmap"
+		resultType="hashmap">
+
+
+		<!-- 리뷰 목록 용도로 쓸거 -->
+	 	<!-- SELECT distinct NVL(rs.REVIEW_NUMBER,0) reviewNumber, rs.REVIEW_DATE
+		reviewDate, rs.REVIEW_GRADE reviewGrade
+		,rs.REVIEW_CONTENT
+		reviewContent ,rs.SHOP_NUMBER shopNumber ,rs.MEMBER_EMAIL memberEmail
+		,rs.REVIEW_FNAME reviewFname, rs.REVIEW_REALFNAME reviewRealfname
+		FROM
+		menu m left outer join (SELECT distinct r.REVIEW_NUMBER,
+		r.REVIEW_DATE
+		,r.REVIEW_GRADE, r.REVIEW_CONTENT
+		,r.SHOP_NUMBER, r.MEMBER_EMAIL
+		,r.REVIEW_FNAME, r.REVIEW_REALFNAME
+		FROM review r left outer join shop
+		s
+		on r.shop_number = s.shop_number
+		ORDER BY REVIEW_DATE DESC) rs
+		ON
+		m.shop_number = rs.shop_number
+		WHERE m.shop_number=
+		#{shopNumber,jdbcType=INTEGER } 
+		ORDER BY REVIEW_DATE DESC -->
+		
+		
+		
+		
+		
+		
+		
+		
+		<!--  SELECT distinct r.REVIEW_NUMBER reviewNumber,
+		r.REVIEW_DATE reviewDate
+		,r.REVIEW_GRADE reviewGrade , r.REVIEW_CONTENT reviewContent
+		,r.SHOP_NUMBER shopNumber , r.MEMBER_EMAIL memberEmail
+		,r.REVIEW_FNAME reviewFname, nvl(r.REVIEW_REALFNAME,0) reviewRealfname
+		FROM review r right outer join shop
+		s
+		on r.shop_number = s.shop_number
+        where r.shop_number = #{shopNumber,jdbcType=INTEGER } 
+		ORDER BY REVIEW_DATE DESC
+		 -->
+		
+		
+		SELECT REVIEW_NUMBER reviewNumber, REVIEW_DATE
+		reviewDate, REVIEW_GRADE reviewGrade
+		,REVIEW_CONTENT
+		reviewContent ,SHOP_NUMBER shopNumber ,MEMBER_EMAIL memberEmail
+		,REVIEW_FNAME reviewFname, REVIEW_REALFNAME reviewRealfname
+		FROM (
+			SELECT ROWNUM RN, A.* 
+				FROM (
+						SELECT * 
+						FROM review 
+                        where shop_number =  #{shopNumber,jdbcType=INTEGER }
+						ORDER BY REVIEW_DATE DESC
+						) A
+				)
+				WHERE RN BETWEEN '${reviewStartRow}' AND '${reviewEndRow}' 
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<!--  SELECT distinct NVL(r.REVIEW_NUMBER,0) reviewNumber,
+		r.REVIEW_DATE reviewDate
+		,r.REVIEW_GRADE reviewGrade, r.REVIEW_CONTENT reviewContent
+		,r.SHOP_NUMBER shopNumber, r.MEMBER_EMAIL memberEmail
+		,r.REVIEW_FNAME reviewFname, r.REVIEW_REALFNAME reviewRealfname
+		FROM review r left outer join shop
+		s
+		on r.shop_number = s.shop_number
+        WHERE s.shop_number= #{shopNumber,jdbcType=INTEGER }
+		ORDER BY REVIEW_DATE DESC 
+ -->
+
+	</select>
+
+	<select id="listingDetailsShopInfo" parameterType="string"
+		resultType="hashmap">
+
+
+
+		<!-- 가게 정보 가져오는데 메뉴판 뛰어줄때쓸꺼 -->
+		SELECT s.SHOP_NUMBER shopNumber ,s.SHOP_TITLE shopTitle, s.SHOP_TEL
+		shopTel, s.SHOP_PRICE_RANGE shopPriceRange
+		,s.SHOP_FOOD shopFood,
+		s.SHOP_PARK shopPark, s.SHOP_TIME shopTime
+		,s.SHOP_HOLIDAY shopHoliday,
+		s.SHOP_CONTENT shopContent, s.SHOP_CREATE_DATE shopCreateDate
+		,s.SHOP_MODIFY_DATE shopModifyDate, s.SHOP_ADDRESS shopAddress,
+		s.SHOP_ADDRESS_SI shopAddressSi
+		,s.SHOP_ADDRESS_GU shopAddressGu,
+		s.SHOP_ADDRESS_DONG shopAddressDong, s.SHOP_REALFNAME shopRealfname
+		,m.menu_name menuName, m.menu_price menuPrice
+		FROM menu m inner join
+		shop s
+		ON m.shop_number = s.shop_number
+		where s.SHOP_NUMBER =
+		#{shopNumber,jdbcType=INTEGER }
+
+	</select>
+	<!-- 리뷰작성 -->
+	<insert id="listingDetailsReviewInsert" parameterType="hashmap">
+
+<!-- 		INSERT
+		INTO review ( review_number, review_date, review_grade,
+		review_content
+		, shop_number , member_email
+		, review_fname , review_realfname )
+		VALUES
+		( review_number_seq.nextval , SYSDATE, '${reviewGrade}' ,
+		#{reviewContent,jdbcType=VARCHAR} ,#{shopNumber} , '${logemail}'
+		,
+		'${reviewFname}' , '${reviewRealfname}' )
+		 -->
+		 <if test="logemail != null">
+		    Insert into review (review_number, review_date, review_grade,
+		review_content
+		, shop_number , member_email
+		, review_fname , review_realfname) 
+        values(review_number_seq.nextval , SYSDATE, '${reviewGrade}' ,
+		#{reviewContent,jdbcType=VARCHAR} ,#{shopNumber} , (Select m.member_email
+                                                             from member m
+                                                             where member_email = '${logemail}')
+		,'${reviewFname}' , '${reviewRealfname}')		
+		</if>
+		
+
+	</insert>
+
+	<!-- <insert id="listingDetailsAddList" parameterType="hashmap"> insert 
+		into mylist (LIST_NUMBER listNumber , SHOP_NUMBER shopNumber) values ( ( 
+		SELECT List_number listNumber FROM bookmark WHERE member_email = '${logemail}' 
+		and defult_list = 'yes'), 2) </insert> -->
+
+
+	<insert id="listingDetailsAddList" parameterType="hashmap">
+		insert into
+		mylist(
+		list_number,
+		shop_number
+		)values (
+		(SELECT list_number listNumber
+		FROM bookmark
+		WHERE member_email = '${logemail}' and defult_list =
+		'yes')
+		, #{shopNumber})
+
+
+
+
+	</insert>
+
+
+	<!-- 사용자가 그 가게를 추가 했는지 알기위한 쿼리문 -->
+	<select id="listingDetailsTotalList" parameterType="hashmap"
+		resultType="hashmap">
+
+		<!-- SELECT distinct nvl(max(shop_number),0) shopNumber
+		FROM
+		mylist
+		WHERE
+		LIST_NUMBER in (SELECT list_number
+		FROM bookmark
+		WHERE
+		member_email = #{logemail}) and shop_number =
+		#{shopNumber,jdbcType=INTEGER}
+		order by shop_number asc
+		 -->
+		
+		SELECT nvl(max(LIST_NUMBER),0) listNumber , max(SHOP_NUMBER) shopNumber
+		FROM mylist 
+		WHERE list_number = (SELECT list_number
+        FROM bookmark
+   		WHERE member_email = #{logemail} and defult_list = 'yes' )
+    	AND shop_number = #{shopNumber}
+		
+		
+	</select>
+
+
+	<!--  이것은 사용을 안함 -->
+	<select id="listingDetailsShopListCount" parameterType="hashmap"
+		resultType="int">
+
+		SELECT count(*)/2 as shopNumber
+		from MYlist m, (SELECT
+		member_email
+		FROM BOOKMARK
+		WHERE member_email = '${logemail}' ) s
+	</select>
+
+	<insert id="listingDetailsReport" parameterType="hashmap">
+	
+	<if test="logemail != null">
+		insert into
+		report (report_number , report_content , review_number)
+		values
+		(REPORT_NUMBER_SEQ.nextval, '${reportContent}' , #{reviewNumber} )
+	</if>
+
+	</insert>
+
+	<select id="listingDetailsProfileRealFname" resultType="hashmap">
+		SELECT
+		r.review_number reviewNumber , m.MEMBER_REALFNAME memberRealfname
+		FROM
+		review r inner join member m
+		on r.member_email = m.member_email
+
+
+	</select>
+
+	<select id="listingDetailsFromReviewRealFname"
+		parameterType="string" resultType="hashmap">
+		<!-- Select nvl ( max(REVIEW_REALFNAME ),0) reviewRealfname
+		from (select REVIEW_REALFNAME REVIEW_REALFNAME
+       			from review 
+        		where shop_number = #{shopNumber}
+				union all 
+				SELECT NULL AS REVIEW_REALFNAME
+         	    FROM dual)
+		where (REVIEW_REALFNAME is not null or REVIEW_REALFNAME is null) and rownum <= 5
+		group by REVIEW_REALFNAME
+		order by REVIEW_REALFNAME desc nulls last -->
+		
+
+  		<![CDATA[
+	
+		
+		
+		
+		
+		Select nvl ( max(REVIEW_REALFNAME ),0) reviewRealfname 
+		from (select REVIEW_REALFNAME REVIEW_REALFNAME, REVIEW_DATE
+       			from review 
+        		where shop_number = #{shopNumber}
+				union all 
+				SELECT NULL AS REVIEW_REALFNAME, null as REVIEW_DATE
+         	    FROM dual)
+		where (REVIEW_REALFNAME is not null or REVIEW_REALFNAME is null) and rownum <= 5
+		group by REVIEW_REALFNAME,REVIEW_DATE
+		order by REVIEW_DATE desc nulls last
+			]]>
+	</select>
+
+	<!--  총 게시글 갯수 출력-->
+<!-- 	 <select id="reviewTotalCount" parameterType="PagingVO" resultType="int">
+	
+	Select count(*) from review where shop_number = #{shopNumber}
+	
+	</select>
+	 -->
+	 
+	<!-- ajax 페이징 실패작 -->
+<!-- 	<select id="reviewPaging" parameterType="hashmap" resultType="hashmap">
+	
+	 SELECT REVIEW_NUMBER reviewNumber, REVIEW_DATE
+		reviewDate, REVIEW_GRADE reviewGrade
+		,REVIEW_CONTENT
+		reviewContent ,SHOP_NUMBER shopNumber ,MEMBER_EMAIL memberEmail
+		,REVIEW_FNAME reviewFname, REVIEW_REALFNAME reviewRealfname
+		FROM (
+			SELECT ROWNUM RN, A.* 
+				FROM (
+						SELECT * 
+						FROM review 
+                        where shop_number =  #{shopNumber}
+						ORDER BY REVIEW_DATE DESC
+						) A
+				)
+	WHERE RN BETWEEN #{reviewStartRow} AND #{reviewEndRow}
+	</select>
+ -->
+
+
+
+</mapper>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="reviewDAO">
+	
+	<!-- 리뷰 수정기능 -->
+	<update id="reviewUpdate"  parameterType="hashmap" >
+	
+		UPDATE review SET review_content= '${reviewContent}' WHERE review_number = #{reviewNumber} and member_email = #{logemail} 
+	
+	</update>
+	
+	<!--  리뷰 삭제 기능-->				<!-- 파라미터 타입 ReviewVO도 가능함 -->
+	<delete id="reviewDelete" parameterType="hashmap">
+	
+			DELETE FROM review WHERE member_email = #{logemail} and 
+			review_number = #{reviewNumber}
+			
+	</delete>
+	
+	
+	
+	<!-- 가게 명을 가져오기위에 조인함 -->
+	<select id="reviewGetList" parameterType="string" resultType="hashmap">
+	
+	<!-- 	Select re.review_number reviewNumber, re.review_date reviewDate, re.review_grade reviewGrade
+			, re.review_content reviewContent
+			, re.shop_number shopNumber
+			, re.member_email memberEmail
+			, re.review_fname reviewFname
+			, re.REVIEW_REALFNAME reviewRealfname
+			, shop.shop_title shopTitle
+	from review re left outer join             (SELECT distinct s.shop_title , s.shop_number
+           						 FROM shop s left outer join review r
+           						 ON s.shop_number = r.shop_number
+            					where r.member_email = #{email}) shop 
+    on re.shop_number = shop.shop_number -->
+    
+    
+       SELECT distinct r.REVIEW_NUMBER reviewNumber,
+		r.REVIEW_DATE reviewDate
+		,r.REVIEW_GRADE reviewGrade, r.REVIEW_CONTENT reviewContent
+		,r.SHOP_NUMBER shopNumber, r.MEMBER_EMAIL memberEmail
+		,r.REVIEW_FNAME reviewFname, nvl(r.REVIEW_REALFNAME,'삭제금지.png') reviewRealfname
+        , s.shop_title shopTitle
+		FROM review r left outer join shop
+		s
+		on r.shop_number = s.shop_number
+        WHERE r.member_email =  #{email}
+		ORDER BY REVIEW_DATE DESC 
+				<!-- 유저 이메일 세션으로 받아서 해쉬 맵으로 넣어야함 일단은 데이터 나오나 볼려고 강제로 입력함 -->	
+	</select>
+	
+
+</mapper>

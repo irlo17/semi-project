@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="reportDAO">
+
+	<!-- 
+		SQL 형태 : SELECT
+		이름 : reportGetListManager 
+		받는 값(parameterType) : 없음 
+		보내는 값(resultType) : ReportVO 
+		사용 : 신고 전체 리스트를 검색하여 ReportVO형으로 보냄 
+	-->
+	<select id="reportGetListManager" resultType="ReportVO">
+		SELECT rp.report_number reportNumber, rp.report_content reportContent, rp.review_number reviewNumber, rv.review_content reviewContent 
+		FROM report rp INNER JOIN review rv
+                            ON rp.review_number = rv.review_number
+	</select>
+	
+	<select id="reportDeleteManager" parameterType="ReportVO" resultType="ReportVO">
+		SELECT rp.report_number reportNumber, rv.review_number reviewNumber, rv.member_email logemail
+		FROM report rp INNER JOIN review rv
+		                ON rp.review_number = rv.review_number
+		WHERE rp.report_number=#{reportNumber}
+	</select>
+
+</mapper>

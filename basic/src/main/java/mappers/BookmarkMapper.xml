@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="BookmarkDAO">
+
+	<!-- 공개여부가 "yes"이고 키워드 검색 시 -->
+	<select id="bookmarkListCount" resultType="int"
+		parameterType="hashmap">
+		SELECT count(*)
+		FROM bookmark b INNER JOIN member m
+		ON b.member_email = m.member_email
+		where b.list_display = 'yes'
+		<if test="searchCondition != null">
+			AND ${searchCondition} LIKE '%${searchKeyword}%'
+		</if>
+		order by b.list_date desc
+	</select>
+
+	<!-- 공개여부 : "yes" 인 즐겨찾기 페이징 -->
+	<select id="bookmarkGetList" resultType="BookmarkVO"
+		parameterType="hashmap">
+		SELECT list_number, list_name , member_nickname ,list_like
+		FROM (
+		SELECT rownum rnum, list_number, list_name , member_nickname ,list_like
+		FROM (
+		SELECT b.*, m.*
+		FROM bookmark b INNER JOIN member m
+		ON b.member_email = m.member_email
+		WHERE b.list_display = 'yes'
+		<if test="searchCondition != null">
+			AND ${searchCondition} LIKE '%${searchKeyword}%'
+		</if>
+		order by list_date DESC
+		)
+		)
+		WHERE rnum between ${startRow} and ${endRow}
+	</select>
+
+	<select id="defultListSearch" resultType="BookmarkVO"
+		parameterType="BookmarkVO">
+		SELECT*
+		FROM bookmark
+		where member_email=#{memberEmail} AND defult_list = 'yes'
+
+	</select>
+
+	<select id="bookmarkGetBestList" resultType="BookmarkVO">
+
+		SELECT b.list_name , m.member_nickname ,nvl(b.list_like,0), b.list_number
+		FROM bookmark b INNER JOIN member m
+		ON b.member_email = m.member_email
+		where b.list_display = 'yes' order by nvl(b.list_like,0) desc
+	</select>
+
+
+	<!-- 나만의 즐겨찾기 총 개수 구하기 (디폴트 제외) -->
+	<select id="bookmarkMylistTotalCount" resultType="int"
+		parameterType="PagingVO">
+		SELECT count(*)
+		FROM bookmark
+		WHERE member_email=#{memberEmail} AND defult_list = 'no'
+	</select>
+
+	<!-- 나만의 즐겨찾기 페이징 -->
+	<select id="bookmarkGetMylistPaging" resultType="BookmarkVO"
+		parameterType="PagingVO">
+		SELECT LIST_NUMBER, LIST_NAME, LIST_DISPLAY ,list_Like
+		FROM (
+		SELECT rownum rnum, bookmark.*
+		FROM (
+		SELECT bookmark.*
+		FROM bookmark
+		WHERE member_email=#{memberEmail} AND defult_list = 'no'
+		ORDER BY LIST_NUMBER DESC
+		)bookmark
+		)bookmark
+		WHERE rnum between #{startRow} and #{endRow}
+	</select>
+
+	<select id="bookmarkGetMylist" resultType="BookmarkVO"
+		parameterType="String">
+
+		SELECT list_Number, list_name , list_display , list_like
+		FROM bookmark
+		WHERE member_email=#{memberEmail} and defult_list='no'
+	</select>
+
+	<!-- 리스트 안 가게 총 개수 -->
+	<select id="bookmarkGetMylistTotalCount" resultType="int"
+		parameterType="PagingVO">
+		SELECT count(*)
+		FROM shop s inner join mylist m
+		ON s.shop_number=m.shop_number inner join bookmark b on
+		m.list_number=b.list_number
+		Where m.list_number=#{listNumber}
+	</select>
+
+	<!-- 리스트 안 가게 페이징 -->
+	<select id="bookmarkGetMylistDetailPaging" resultType="MylistVO"
+		parameterType="PagingVO">
+		SELECT s.list_number,
+		s.shop_title,s.shop_food,s.shop_address_si,s.shop_price_range,s.shop_tel,s.shop_realfname,s.list_name,s.shop_number
+		FROM (
+		SELECT rownum rnum, s.list_number,
+		s.shop_title,s.shop_food,s.shop_address_si,s.shop_price_range,s.shop_tel,s.shop_realfname,s.list_name,s.shop_number
+		FROM (
+		SELECT s.*, m.list_number, b.list_name
+		FROM shop s inner join mylist m
+		ON s.shop_number=m.shop_number
+		inner join bookmark b
+		on m.list_number=b.list_number
+		WHERE m.list_number=#{listNumber}
+		ORDER BY s.shop_food DESC
+		)s
+		)s
+		WHERE rnum between #{startRow} and #{endRow}
+	</select>
+
+	<select id="bookmarkGetMylistDetail" resultType="MylistVO"
+		parameterType="String">
+		SELECT m.list_number,
+		s.shop_title,s.shop_food,s.shop_address_si,s.shop_price_range,s.shop_tel,b.list_name,
+		s.shop_realfname,s.shop_number
+		FROM shop s inner join mylist m
+		ON s.shop_number=m.shop_number inner join bookmark b on
+		m.list_number=b.list_number
+		Where m.list_number=#{listNumber}
+	</select>
+
+
+	<select id="bookmarkGetDetail" resultType="BookmarkVO"
+		parameterType="String">
+		SELECT list_number,list_name,list_display,defult_list
+		FROM bookmark
+		WHERE list_number=#{listNumber}
+	</select>
+
+
+
+	<update id="bookmarkModify" parameterType="BookmarkVO">
+		UPDATE bookmark
+		SET list_name=#{listName} , list_display=#{listDisplay}
+		WHERE list_number=#{listNumber}
+	</update>
+
+	<delete id="bookmarkDelete" parameterType="String">
+		DELETE FROM bookmark WHERE list_number=#{listNumber}
+	</delete>
+
+	<resultMap type="MylistVO" id="mylistUpdate">
+		<result property="listNumber2" column="list_number" />
+	</resultMap>
+
+	<update id="mylistUpdate" parameterType="MylistVO">
+		update mylist
+		set list_number =#{listNumber}
+		where shop_number=#{shopNumber} and
+		list_number=#{listNumber2}
+	</update>
+
+
+	<delete id="mylistDelete" parameterType="MylistVO">
+		DELETE FROM mylist WHERE list_number=#{listNumber} and shop_number=
+		#{shopNumber}
+	</delete>
+
+	<select id="TotalbookmarkCount" resultType="int">
+		SELECT count(b.list_name)
+		FROM bookmark b INNER JOIN member m
+		ON b.member_email = m.member_email
+		where b.list_display = 'yes'
+		order by list_date desc
+	</select>
+
+
+	<insert id="MylistInsert" parameterType="BookmarkVO">
+		insert into
+		bookmark(list_number,list_name,list_display,member_email,list_date,defult_list,list_like)
+		values(list_number_seq.nextval,#{listName},#{listDisplay},#{memberEmail},sysdate,'no',0)
+	</insert>
+
+	<select id="ImageSelectBestBookmark" parameterType="Int"
+		resultType="BookmarkVO">
+		SELECT list_name,shop_realfname,list_number,member_nickname,list_like
+		FROM
+		(SELECT rownum rnum, shop_realfname
+		,list_name,list_number,member_nickname,list_like
+		FROM
+		(SELECT b.list_name , m.member_nickname ,b.list_like, b.list_number,
+		s.shop_realfname, s.shop_number
+		FROM bookmark b INNER JOIN member m
+		ON b.member_email = m.member_email inner join mylist l
+		on l.list_number=b.list_number inner join shop s
+		on s.shop_number=l.shop_number
+		where b.list_display = 'yes'
+		order by b.list_like desc)where list_number=#{listNumber} )
+		WHERE rnum =1
+	</select>
+
+	<!-- 좋아요 추가 -->
+	<insert id="pictureHeartSave" parameterType="HeartVO">
+		insert into liketb(like_number,member_email,list_number)
+		values(like_number_seq.nextval, #{memberEmail}, #{listNumber})
+	</insert>
+	<update id="pictureHeartUp" parameterType="BookmarkVO">
+		update bookmark set list_like=list_like+1
+		where list_number=#{listNumber} and ( select member_email from liketb where
+		list_number=#{listNumber} and member_email=#{memberEmail})is null
+	</update>
+
+	<!-- 좋아요 삭제 -->
+	<delete id="pictureHeartRemove" parameterType="HeartVO">
+		delete from liketb
+		where list_number=#{listNumber} and member_email=#{memberEmail}
+	</delete>
+	
+	
+	<update id="pictureHeartDown" parameterType="BookmarkVO">
+		update bookmark set list_like=list_like-1
+		where list_number=#{listNumber} and ( select member_email from liketb where
+		list_number=#{listNumber} and member_email=#{memberEmail} )=
+		#{memberEmail}
+	</update>
+
+	<!-- 좋아요 추가/삭제시 좋아요 갯수 가져오기 -->
+	<select id="pictureHeartCount" parameterType="BookmarkVO"
+		resultType="BookmarkVO">
+		select *
+		from bookmark
+		where list_number=#{listNumber}
+	</select>
+
+	<select id="heartCheak" parameterType="HeartVO"
+		resultType="HeartVO">
+		select *
+		from liketb
+		where member_email=#{memberEmail} and list_number=#{listNumber}
+	</select>
+
+	<select id="overlapSearch" parameterType="MylistVO"
+		resultType="MylistVO">
+		SELECT *
+		FROM mylist
+		WHERE list_number = #{listNumber} AND shop_number=#{shopNumber}
+	</select>
+
+</mapper>

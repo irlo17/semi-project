@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="shopDAO">
+
+
+	<!-- 아직 미완성 필터창 검색값과인데 임의로 결과값을 넣음 -->
+	<!-- parameter : 받아오는 값 || result : 보내는 값 -->
+	<select id="shopPageGetList" parameterType="String"
+		resultType="ShopVO">
+
+		select *
+		from shop s
+		where s.shop_food LIKE
+		'%'||#{query}||'%' or s.shop_address LIKE
+		'%'||#{query}||'%' or
+		s.shop_title LIKE '%'||#{query}||'%'
+		or SHOP_ADDRESS_DONG LIKE '%'||#{query}||'%'
+
+	</select>
+
+
+
+	<select id="shopPageFilterGetList" parameterType="hashmap"
+		resultType="ShopVO">
+
+		SELECT *
+		FROM shop s
+		<trim prefix="WHERE" prefixOverrides="AND |OR">
+			<if test="query != '' ">
+				s.shop_food LIKE '%'||#{query}||'%' or s.shop_address
+				LIKE '%'||#{query}||'%'
+				or
+				s.shop_title LIKE '%'||#{query}||'%'
+				or SHOP_ADDRESS_DONG LIKE '%'||#{query}||'%'
+			</if>
+
+			<if
+				test="foodKind.koreanFood != '' or foodKind.japaneseFood != '' or foodKind.chineseFood != '' or foodKind.westernFood != '' or foodKind.worldFood != '' or foodKind.buffet != '' or foodKind.cafe != '' or foodKind.pup != ''">
+				AND (
+			</if>
+			<trim prefixOverrides="AND |OR">
+				<if test="foodKind.koreanFood != '' ">
+					OR s.shop_food = #{foodKind.koreanFood}
+				</if>
+				<if test="foodKind.japaneseFood != '' ">
+					OR s.shop_food = #{foodKind.japaneseFood}
+				</if>
+				<if test="foodKind.chineseFood != '' ">
+					OR s.shop_food = #{foodKind.chineseFood}
+				</if>
+				<if test="foodKind.westernFood != '' ">
+					OR s.shop_food = #{foodKind.westernFood}
+				</if>
+				<if test="foodKind.worldFood != '' ">
+					OR s.shop_food = #{foodKind.worldFood}
+				</if>
+				<if test="foodKind.buffet != '' ">
+					OR s.shop_food = #{foodKind.buffet}
+				</if>
+				<if test="foodKind.cafe != '' ">
+					OR s.shop_food = #{foodKind.cafe}
+				</if>
+				<if test="foodKind.pup != '' ">
+					OR s.shop_food = #{foodKind.pup}
+				</if>
+			</trim>
+			<if
+				test="foodKind.koreanFood != '' or foodKind.japaneseFood != '' or foodKind.chineseFood != '' or foodKind.westernFood != '' or foodKind.worldFood != '' or foodKind.buffet != '' or foodKind.cafe != '' or foodKind.pup != ''">
+				)
+			</if>
+
+
+			<if
+				test="foodPrice.manwonLess != '' or foodPrice.manwonMore != '' or foodPrice.threeManwonMore != '' or foodPrice.fiveManwonMore != '' ">
+				AND (
+			</if>
+			<trim prefixOverrides="AND |OR">
+				<if test="foodPrice.manwonLess != '' ">
+					OR s.SHOP_PRICE_RANGE = #{foodPrice.manwonLess}
+				</if>
+				<if test="foodPrice.manwonMore != '' ">
+					OR s.SHOP_PRICE_RANGE = #{foodPrice.manwonMore}
+				</if>
+				<if test="foodPrice.threeManwonMore != '' ">
+					OR s.SHOP_PRICE_RANGE = #{foodPrice.threeManwonMore}
+				</if>
+				<if test="foodPrice.fiveManwonMore != '' ">
+					OR s.SHOP_PRICE_RANGE = #{foodPrice.fiveManwonMore}
+				</if>
+			</trim>
+			<if
+				test="foodPrice.manwonLess != '' or foodPrice.manwonMore != '' or foodPrice.threeManwonMore != '' or foodPrice.fiveManwonMore != '' ">
+				)
+			</if>
+
+
+			<if test="shopAddressSi != '' or shopAddressGu != ''">
+				AND (
+			</if>
+			<trim prefixOverrides="AND |OR">
+				<if test="shopAddressSi != '' ">
+					s.SHOP_ADDRESS_SI LIKE '%'||#{shopAddressSi}||'%'
+				</if>
+				<if test="shopAddressGu != '' ">
+					AND s.SHOP_ADDRESS_GU LIKE '%'||#{shopAddressGu}||'%'
+				</if>
+			</trim>
+			<if test="shopAddressSi != '' or shopAddressGu != ''">
+				)
+			</if>
+		</trim>
+	</select>
+
+	<select id="shopPageFilterGetList2" parameterType="hashmap"
+		resultType="ShopVO">
+
+		select *
+		from shop s
+		<trim prefix="WHERE" prefixOverrides="AND |OR">
+
+			#{distance}	
+			
+		<![CDATA[
+		<=#{radius}
+		]]>
+			and s.SHOP_NUMBER = #{sVO.shopNumber}
+
+
+			<if test="query2 != '' ">
+				AND (s.shop_food LIKE '%'||#{query2}||'%' or
+				s.shop_address
+				LIKE
+				'%'||#{query2}||'%'
+				or
+				s.shop_title LIKE
+				'%'||#{query2}||'%'
+				or SHOP_ADDRESS_DONG LIKE '%'||#{query2}||'%')
+			</if>
+
+			<if
+				test="filterFood.koreanFood != '' or filterFood.japaneseFood != '' or filterFood.chineseFood != '' or filterFood.westernFood != '' or filterFood.worldFood != '' or filterFood.buffet != '' or filterFood.cafe != '' or filterFood.pup != ''">
+				AND (
+			</if>
+			<trim prefixOverrides="AND |OR">
+				<if test="filterFood.koreanFood != '' ">
+					OR s.shop_food = #{filterFood.koreanFood}
+				</if>
+				<if test="filterFood.japaneseFood != '' ">
+					OR s.shop_food = #{filterFood.japaneseFood}
+				</if>
+				<if test="filterFood.chineseFood != '' ">
+					OR s.shop_food = #{filterFood.chineseFood}
+				</if>
+				<if test="filterFood.westernFood != '' ">
+					OR s.shop_food = #{filterFood.westernFood}
+				</if>
+				<if test="filterFood.worldFood != '' ">
+					OR s.shop_food = #{filterFood.worldFood}
+				</if>
+				<if test="filterFood.buffet != '' ">
+					OR s.shop_food = #{filterFood.buffet}
+				</if>
+				<if test="filterFood.cafe != '' ">
+					OR s.shop_food = #{filterFood.cafe}
+				</if>
+				<if test="filterFood.pup != '' ">
+					OR s.shop_food = #{filterFood.pup}
+				</if>
+			</trim>
+			<if
+				test="filterFood.koreanFood != '' or filterFood.japaneseFood != '' or filterFood.chineseFood != '' or filterFood.westernFood != '' or filterFood.worldFood != '' or filterFood.buffet != '' or filterFood.cafe != '' or filterFood.pup != ''">
+				)
+			</if>
+
+
+			<if
+				test="filterFood.manwonLess != '' or filterFood.manwonMore != '' or filterFood.threeManwonMore != '' or filterFood.fiveManwonMore != '' ">
+				AND (
+			</if>
+			<trim prefixOverrides="AND |OR">
+				<if test="filterFood.manwonLess != '' ">
+					OR s.SHOP_PRICE_RANGE = #{filterFood.manwonLess}
+				</if>
+				<if test="filterFood.manwonMore != '' ">
+					OR s.SHOP_PRICE_RANGE = #{filterFood.manwonMore}
+				</if>
+				<if test="filterFood.threeManwonMore != '' ">
+					OR s.SHOP_PRICE_RANGE = #{filterFood.threeManwonMore}
+				</if>
+				<if test="filterFood.fiveManwonMore != '' ">
+					OR s.SHOP_PRICE_RANGE = #{filterFood.fiveManwonMore}
+				</if>
+			</trim>
+			<if
+				test="filterFood.manwonLess != '' or filterFood.manwonMore != '' or filterFood.threeManwonMore != '' or filterFood.fiveManwonMore != '' ">
+				)
+			</if>
+
+			<if
+				test="filterFood.shopAddressSi != '' or filterFood.shopAddressGu != ''">
+				AND (
+			</if>
+			<trim prefixOverrides="AND |OR">
+				<if test="filterFood.shopAddressSi != '' ">
+					s.SHOP_ADDRESS_SI LIKE
+					'%'||#{filterFood.shopAddressSi}||'%'
+				</if>
+				<if test="filterFood.shopAddressGu != '' ">
+					AND s.SHOP_ADDRESS_GU LIKE
+					'%'||#{filterFood.shopAddressGu}||'%'
+				</if>
+			</trim>
+			<if
+				test="filterFood.shopAddressSi != '' or filterFood.shopAddressGu != ''">
+				)
+			</if>
+
+			<if
+				test="filterFood.parking != ''">
+				AND (
+			</if>
+			<trim prefixOverrides="AND |OR">
+				<if test="filterFood.parking != '' ">
+					s.SHOP_PARK = #{filterFood.parking} 
+				</if>
+			</trim>
+			<if
+				test="filterFood.parking != ''">
+				)
+			</if>
+
+		</trim>
+
+	</select>
+
+
+
+
+
+	<!-- SQL 형태 : SELECT 이름 : shopGetListManager 받는 값(parameterType) : 없음 보내는 
+		값(resultType) : ShopVO 사용 : 가게 전체 리스트를 검색하여 ShopVO형으로 보냄 -->
+	<select id="shopGetListManager" resultType="ShopVO">
+		SELECT * FROM shop
+	</select>
+
+	<!-- SQL 형태 : INSERT 이름 : shopInsertManager 받는 값 (parameterType) : ShopVO 
+		보내는 값(resultType) : 없음 ( Default -> int ) 사용 : ShopVO에 담겨있는 내용을 DB에 Insert함 -->
+	<insert id="shopInsertManager" parameterType="ShopVO">
+		INSERT INTO shop
+		(shop_number, shop_title, shop_tel
+		, shop_price_range, shop_food,
+		shop_park, shop_time
+		, shop_holiday, shop_content
+		, shop_create_date,
+		shop_modify_date
+		, shop_address, shop_address_si
+		, shop_address_gu,
+		shop_address_dong
+		, shop_realfname
+		, shop_lat
+		, shop_lon
+		, shop_open
+		, shop_close
+		)
+		VALUES(shop_number_seq.nextval,
+		#{shopTitle}, #{shopTel}
+		, #{shopPriceRange, jdbcType=VARCHAR},
+		#{shopFood, jdbcType=VARCHAR},
+		#{shopPark, jdbcType=VARCHAR},
+		#{shopTime, jdbcType=VARCHAR}
+		, #{shopHoliday, jdbcType=VARCHAR},
+		#{shopContent, jdbcType=VARCHAR}
+		, sysdate, sysdate
+		, #{shopAddress},
+		#{shopAddressSi}
+		, #{shopAddressGu}, #{shopAddressDong}
+		,
+		#{shopRealfname, jdbcType=VARCHAR}
+		, #{shopLat}
+		, #{shopLon}
+		, #{shopOpen}
+		, #{shopClose}
+		)
+	</insert>
+
+	<!-- SQL 형태 : DELETE 이름 : shopDeleteManager 받는 값 (parameterType) : ShopVO 
+		보내는 값(resultType) : 없음 ( Default -> int ) 사용 : ShopVO에 담겨있는 shopNumber와 맞는 
+		데이터를 삭제 -->
+	<delete id="shopDeleteManager" parameterType="ShopVO">
+		DELETE FROM shop
+		WHERE shop_number= #{shopNumber}
+	</delete>
+
+	<!-- SQL 형태 : SELECT 이름 : shopGetManager 받는 값 (parameterType) : ShopVO 보내는 
+		값(resultType) : ShopVO 사용 : ShopVO에 담겨있는 shopNumber와 맞는 데이터를 ShopVO에 담아 보냄 -->
+	<select id="shopGetManager" parameterType="ShopVO"
+		resultType="ShopVO">
+		SELECT * FROM shop
+		WHERE shop_number=#{shopNumber}
+	</select>
+
+	<!-- SQL 형태 : UPDATE 이름 : shopUpdateManager 받는 값 (parameterType) : ShopVO 
+		보내는 값(resultType) : 없음 사용 : ShopVO에 담겨있는 shopNumber와 맞는 데이터를 수정 -->
+	<update id="shopUpdateManager">
+		UPDATE shop
+		SET shop_title=#{shopTitle},
+		shop_tel=#{shopTel}
+		, shop_price_range=#{shopPriceRange,
+		jdbcType=VARCHAR}
+		, shop_food=#{shopFood, jdbcType=VARCHAR},
+		shop_park=#{shopPark,
+		jdbcType=VARCHAR}
+		, shop_time=#{shopTime,
+		jdbcType=VARCHAR}
+		, shop_holiday=#{shopHoliday, jdbcType=VARCHAR}
+		,
+		shop_content=#{shopContent, jdbcType=VARCHAR}
+		,
+		shop_modify_date=sysdate
+		, shop_realfname=#{shopRealfname,
+		jdbcType=VARCHAR}
+		WHERE
+		shop_number=#{shopNumber}
+	</update>
+
+</mapper>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="menuDAO">
+
+	<!-- 
+		SQL 형태 : INSERT
+		이름 : menuInsertManager
+		받는 값 (parameterType) : MenuVO
+		보내는 값(resultType) : 없음 ( Default -> int )
+		사용 : MenuVO에 담겨있는 값을 insert함
+	 -->
+	 <insert id="menuInsertManager" parameterType="MenuVO">
+	 	INSERT INTO menu (shop_number, menu_name, menu_price)
+	 	VALUES (#{shopNumber}, #{menuName}, #{menuPrice})
+	 </insert>
+	 
+	 <!-- 
+		SQL 형태 : SELECT
+		이름 : menuGetListManager
+		받는 값 (parameterType) : MenuVO
+		보내는 값(resultType) : MenuVO
+		사용 : Menu테이블에 담겨진 전체 리스트를 조회
+	 -->
+	 <select id="menuGetListManager" parameterType="MenuVO" resultType="MenuVO">
+	 	SELECT *
+	 	FROM menu
+	 	WHERE shop_number=#{shopNumber}
+	 </select>
+	 
+	 <!-- 
+		SQL 형태 : DELETE
+		이름 : menuDeleteManager
+		받는 값 (parameterType) : MenuVO
+		보내는 값(resultType) : 없음 (Default -> int)
+		사용 : Menu테이블에 담겨진 데이터들 중 shopNumber와 menuName이 같은 데이터 삭제
+	 -->
+	 <delete id="menuDeleteManager" parameterType="MenuVO">
+	 	DELETE FROM menu
+     	WHERE shop_number=#{shopNumber} AND menu_name=#{menuName}
+	 </delete>
+
+</mapper>

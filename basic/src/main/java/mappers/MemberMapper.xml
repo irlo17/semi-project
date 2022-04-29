@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="memberDAO">
+	
+	<!-- 이메일 중복 여부
+			- null O : 사용 가능한 이메일
+			- null X : 중복된 이메일 - 사용 불가능
+		마이페이지 회원정보에 출력될 회원의 레코드 검색
+			- 세션에 저장된 이메일을 조건으로 회원 검색
+	 -->
+	<select id="emailCheck"  resultType="MemberVO" parameterType="MemberVO">
+		SELECT * FROM member
+		<where>
+			member_email=#{memberEmail}
+		</where>
+	</select>
+	
+	<!-- 회원 정보 입력 -->
+	<insert id="memberInsert" parameterType="MemberVO">
+		INSERT INTO member	(member_email, member_nickname, member_password
+							,member_name, member_birth, member_tel, member_admin
+							,member_date
+							) 
+		VALUES(#{memberEmail}, #{memberNickname},#{memberPassword}
+				,#{memberName},#{memberBirth},#{memberTel},'N'
+				,SYSDATE
+				)
+	</insert>
+	
+	<!-- 디폴트 마이 리스트 생성 -->
+	<insert id="memberDefaultList" parameterType="MemberVO">
+		INSERT INTO bookmark(LIST_NUMBER, LIST_NAME, LIST_DISPLAY
+							, LIST_LIKE, MEMBER_EMAIL, LIST_DATE
+							, DEFULT_LIST) 
+		VALUES (list_number_seq.nextval, '즐겨찾기한 가게','no'
+				,0,#{memberEmail},sysdate
+				,'yes')
+	
+	</insert>
+	
+	<!-- 로그인 가능 여부
+				- null O : 사용 가능한 이메일
+				- null X : 중복된 이메일 - 사용 불가능
+	 -->
+	<select id="loginCheck" resultType="MemberVO" parameterType="MemberVO">
+		SELECT * FROM member
+		<where>
+			member_email=#{memberEmail} AND member_password=#{memberPassword}
+		</where>
+	</select>
+	
+	<!-- 비밀번호 찾기 : 회원 정보가 있는지 확인 
+				- null O : 비밀번호 재설정 불가능
+				- null X : 비밀번호 재설정 페이지로 이동
+	-->
+	<select id="pwSearch" resultType="MemberVO" parameterType="MemberVO">
+		SELECT * FROM member
+		<where>
+			member_email=#{memberEmail} AND member_name=#{memberName} 
+										AND member_tel=#{memberTel}
+		</where>
+	</select>
+	
+	<!-- 비밀번호 재설정 
+			- 이메일로 해당 회원의 정보를 찾은 후 비밀번호 update -->
+	<update id="pwChange" parameterType="MemberVO">
+		UPDATE member SET member_password = #{memberPassword}
+		<where>
+			member_email=#{memberEmail}
+		</where>
+	</update>
+	
+	<!-- 회원 정보 수정 -->
+	<update id="memberUpdate" parameterType="MemberVO">
+		UPDATE member 
+		SET member_nickname=#{memberNickname}
+			, member_birth=#{memberBirth}
+			, member_tel=#{memberTel}
+			<if test='!memberPassword.equals("")'>
+			, member_password=#{memberPassword}
+			</if>
+			<if test="memberFname != null">
+			, member_fname=#{memberFname}
+			, member_realfname=#{memberRealfname}
+			</if>
+			<where>
+			 member_email = #{memberEmail}
+			</where>
+	</update>
+	
+	<!-- 회원탈퇴 -->
+	<delete id="memberDelete" parameterType="MemberVO">
+		DELETE FROM member 
+		<where>
+			member_email = #{memberEmail} AND member_password = #{memberPassword}
+		</where>
+	</delete>
+	
+
+	
+	<!-- ===== 관리자페이지 ===== -->
+	<!-- 
+		SQL 형태 : SELECT
+		이름 : memberGetListManager
+		받는 값(parameterType) : 없음
+		보내는 값(resultType) : MemberVO
+		사용 : 회원 전체 리스트를 검색하여 MemberVO형으로 보냄 
+	 -->
+	 <select id="memberGetListManager" resultType="MemberVO">
+	 	SELECT * FROM member
+	 </select>
+	 
+	<!-- 관리자 회원탈퇴 -->
+	<delete id="memberDeleteManager" parameterType="MemberVO">
+		DELETE FROM member 
+		<where>
+			member_email = #{memberEmail}
+		</where>
+	</delete>
+
+</mapper>
