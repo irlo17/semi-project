@@ -333,7 +333,7 @@ $('#btnPwSearch').click(function(){
 	var authenticationNumber = $.trim($("#authenticationNumber").val());
 	
 	// 인증번호와 입력한 문자열이 같을 때 폼 전송
-	if(document.writeln(ramdom === authenticationNumber)){
+	if(ramdom === authenticationNumber){
 		document.pwSearchForm.submit();
 	}else{
 		$('.error_box.pwSearch').html("인증번호가 일치하지 않습니다.");
