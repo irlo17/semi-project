@@ -63,20 +63,6 @@ public class MemberDAOImpl implements MemberDAO{
 
 	
 
-	/**	비밀번호 찾기
-	 * 	- DB에서 회원 정보 찾기
-	 *  - MemberMapper의 #pwSearch 호출
-	 * @param MemberVO vo (memberEmail, memberName, memberTel)
-	 * @return MemberVO vo
-	 * 			- null O : 비밀번호 재설정 X 
-	 * 			- null X : 비밀전호 재설정 O
-	 */
-	@Override
-	public MemberVO pwSearch(MemberVO vo) {
-		System.out.println("===> MemberMapper pwSearch 호출");
-		return memberMybatis.selectOne("memberDAO.pwSearch", vo);
-	}
-
 	
 
 	/**	비밀번호 변경

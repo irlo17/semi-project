@@ -58,20 +58,6 @@ public class MemberServiceImpl implements MemberService{
 	}
 
 	
-	
-	
-	/**	비밀번호 찾기
-	 * 	- DB에서 회원 정보 찾기
-	 * 	- MemberDAO의 pwSearch() 호출
-	 * @param MemberVO vo 
-	 * @return MemberVO vo
-	 * 			- null O : 비밀번호 재설정 X 
-	 * 			- null X : 비밀전호 재설정 O
-	 */
-	@Override
-	public MemberVO pwSearch(MemberVO vo) {
-		return memberDAO.pwSearch(vo);
-	}
 
 	
 	

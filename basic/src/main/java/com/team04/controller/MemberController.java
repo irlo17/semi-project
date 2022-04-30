@@ -192,9 +192,10 @@ public class MemberController {
 		
 		final String user = "memp35@naver.com";
 		final String password = "UYMTWG2KVGBH";
+		StringBuffer sb = new StringBuffer();	// 인증번호를 담을 변수
+		
 		
 		// 인증번호 변수
-		 String random = "";
 		
 		// SMTP 서버 정보를 설정함
 		Properties prop = new Properties();
@@ -220,14 +221,24 @@ public class MemberController {
           // Subject - 제목
           message.setSubject("먹생먹사 비밀번호 찾기 인증번호입니다.");
           
-          Random ran = new Random();
-          
-          // 인증 다시 하기
-          random = Integer.toString(ran.nextInt());
-          System.out.println(random);
+
+
+
+          char[] cert = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 
+                  'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 
+                  'Y', 'Z', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0' };
+      		
+          Random random = new Random(System.currentTimeMillis());
+
+          for(int i=0; i<10; i++) {	// 인증번호는 10자리
+
+        	  sb.append(cert[random.nextInt(cert.length)]);
+
+          }	
+
           
           // Text - 내용
-          message.setText("인증번호는 [ " + random + " ] 입니다.");
+          message.setText("인증번호는 [ " + sb.toString() + " ] 입니다.");
 
           // send the message
           Transport.send(message);
@@ -239,28 +250,18 @@ public class MemberController {
       }
 		
 		
-		return random;
+		return sb.toString();
 		
 	}//end of pwSearch()
 	
 	
-	@RequestMapping(value="pwSearch.do", produces="application/text;charset=utf-8")
-	@ResponseBody
+	@RequestMapping("pwSearch.do")
 	public String pwSearch(MemberVO vo, HttpSession session) {
-		MemberVO result = memberService.pwSearch(vo);
-		String message = "";	// 회원 정보 유무를 담을 변수
-		
-		if(result == null) {
-			// 회원정보가 없다는 뜻
-			message = "N";
-		}
 
 		/*	존재하는 회원이면 해당 이메일을 세션에 저장
 				- 추후에 저장한 이메일을 비밀번호 재설정에서 사용함 */
 		session.setAttribute("email", vo.getMemberEmail());
-
-		return message;
-
+		return "redirect:pwChangeForm.do";
 	}//end of pwSearch()
 
 
