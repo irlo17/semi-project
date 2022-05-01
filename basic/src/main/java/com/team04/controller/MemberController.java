@@ -45,6 +45,7 @@ public class MemberController {
 
 	@Autowired
 	private MemberService memberService;
+	
 
 
 
@@ -55,6 +56,12 @@ public class MemberController {
 	 */
 	@RequestMapping("memberInsert.do")
 	public String memberInsert(MemberVO vo) {
+		
+		// 비밀번호 암호화 추가(테스트) - DB 컬럼 변경
+		String password = vo.getMemberPassword();
+		
+		
+		
 		memberService.memberInsert(vo);
 		memberService.memberDefaultList(vo);
 		
