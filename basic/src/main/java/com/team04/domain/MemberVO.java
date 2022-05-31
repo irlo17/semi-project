@@ -66,7 +66,7 @@ public class MemberVO {
 			memberRealfname = memberUUID.toString()+"_"+memberFname;
 			
 			// 저장 C:\Users\admin\Documents\GitHub\team04
-			File memberF = new File("C:\\Users\\admin\\Documents\\GitHub\\team04\\src\\main\\webapp\\resources\\upload\\"+memberRealfname);
+			File memberF = new File("C:\\Users\\admin\\Documents\\GitHub\\semi-project\\basic\\src\\main\\webapp\\resources\\upload\\"+memberRealfname);
 			
 			//예외처리 필수
 			try {
