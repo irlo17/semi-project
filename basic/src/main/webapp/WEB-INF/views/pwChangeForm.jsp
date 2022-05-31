@@ -38,6 +38,7 @@
                   <p class="mb-4"></p>
                 </div>
                 <form id="pwChangeForm" action="pwChange.do" method="post" name="pwChangeForm">
+				<input type="hidden" id="memberEmail" name="memberEmail" value="${param.memberEmail }">
                 
                 <!-- PW -->
                   <div class="form-group first field--not-empty">

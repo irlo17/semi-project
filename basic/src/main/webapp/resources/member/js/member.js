@@ -19,10 +19,12 @@ var blank = "필수 입력 사항입니다.";
 */
 var emailCheak = false;
 $('#btn_emailCheak').click(function(){
-	// 이메일 중복검사 확인 여부
 	
+	// 이메일 중복검사 확인 여부
 	$('label[for="memberEmail"] .error_box').html("");
-	var memberEmail = $.trim($("#memberEmail").val());
+	
+	// 입력값 변수에 담기
+	var memberEmail = $("#memberEmail").val();
 	
 	// 입력값이 없을 때 에러박스
 	if(memberEmail == ''){
@@ -70,14 +72,14 @@ $('#btn_emailCheak').click(function(){
 */
 $('#btn_signUp').click(function(){
 
-	// input에 입력된 값을 공백제거하고 변수에 담기
-	var memberNickname = $.trim($("#memberNickname").val());
-	var memberEmail = $.trim($("#memberEmail").val());
-	var memberPassword = $.trim($("#memberPassword").val());
-	var passwordCheck = $.trim($("#passwordCheck").val());
-	var memberName = $.trim($("#memberName").val());
-	var memberBirth = $.trim($("#memberBirth").val());
-	var memberTel = $.trim($("#memberTel").val());
+	// input에 입력된 값을 변수에 담기
+	var memberNickname = $("#memberNickname").val();
+	var memberEmail = $("#memberEmail").val();
+	var memberPassword = $("#memberPassword").val();
+	var passwordCheck = $("#passwordCheck").val();
+	var memberName = $("#memberName").val();
+	var memberBirth = $("#memberBirth").val();
+	var memberTel = $("#memberTel").val();
 	
 	/* 닉네임 */
 	if(memberNickname == ''){
@@ -211,30 +213,30 @@ $('#btn_signUp').click(function(){
 		// 체크 O
 		$('#termsService').next().html("");
 		$.ajax({
-			    	type : 'post',
-			    	url : 'emailCheck.do',
-			    	data : { memberEmail : $('#memberEmail').val() },
-			    	contentType : 'application/x-www-form-urlencoded;charset=utf-8',
-			    	success : function(result){
-			    		// 중복 검사 후 나오는 결과 에러박스에 출력
-			    		if(result == 'Y'){
-			    			$('label[for="memberEmail"] .error_box').html("");
-				        		document.member_frm.submit();
-				        		alert("회원가입이 되었습니다.");
-							}else{
-				        		$('label[for="memberEmail"] .error_box').css('color','#ED7A64');
-								$('label[for="memberEmail"] .error_box').html("이메일 중복 여부를 확인해주세요.");
-				        		emailCheak = false;
-				        		return;
-							}
-			    	},
-			    	error : function(err){
-						alert('실패');
-			    		console.log(err);
-			    	}
-			    }); //end of ajax			
-	}
-});
+		    	type : 'post',
+		    	url : 'emailCheck.do',
+		    	data : { memberEmail : $('#memberEmail').val() },
+		    	contentType : 'application/x-www-form-urlencoded;charset=utf-8',
+		    	success : function(result){
+		    		// 중복 검사 후 나오는 결과 에러박스에 출력
+		    		if(result == 'Y'){
+		    			$('label[for="memberEmail"] .error_box').html("");
+			        		document.member_frm.submit();
+			        		alert("회원가입이 되었습니다.");
+						}else{
+			        		$('label[for="memberEmail"] .error_box').css('color','#ED7A64');
+							$('label[for="memberEmail"] .error_box').html("이메일 중복 여부를 확인해주세요.");
+			        		emailCheak = false;
+			        		return;
+						}// end of if - 이메일 중복 여부
+		    	},
+		    	error : function(err){
+					alert('실패');
+		    		console.log(err);
+		    	}
+		  	  }); //end of ajax			
+	}//end of if
+});//end of $('#btn_signUp').click
 
 
 /*********************************************************************
@@ -244,8 +246,8 @@ $('#btn_signUp').click(function(){
 
 $('#btnLogin').click(function(){
 
-	var memberEmail = $.trim($("#memberEmail").val());
-	var memberPassword = $.trim($("#memberPassword").val());
+	var memberEmail = $("#memberEmail").val();
+	var memberPassword = $("#memberPassword").val();
 	var rememberEmail = false;
 
 	/* 이메일 */
@@ -266,34 +268,34 @@ $('#btnLogin').click(function(){
 		$('label[for="memberPassword"] .error_box').html("");
 		}
 	
-	/* 이메일 기억하기 체크 박스*/
+	/* 이메일 기억하기를 체크했다면 rememberEmail 값을 true로 변경 */
 	if( $("#rememberEmail").is(':checked') ){
 		rememberEmail = true;
 		}//end of if
 	
-  $.ajax({
-	type : 'post',
-	url : 'loginCheck.do',
-	data : { memberEmail : $("#memberEmail").val(),
-			memberPassword : $("#memberPassword").val(),
-			rememberEmail : rememberEmail
-	 		},
-	contentType : 'application/x-www-form-urlencoded;charset=utf-8',
-	success : function(result){
-		// 중복 검사 후 나오는 결과 에러박스에 출력
-		if(result == "N"){
-        		$('.error_box.login').html("존재하는 회원이 아니거나 비밀번호가 일치하지 않습니다.");
-			
-			}else{
-			// 결과가 result = "Y"이면 로그인 성공 -> loginMove.do로 이동
-        		document.loginForm.submit();
-			}
-	},
-	error : function(err){
-		alert(err);
-		console.log(err);
-	}
-	});//end of ajax
+	  $.ajax({
+		type : 'post',
+		url : 'loginCheck.do',
+		data : { memberEmail : $("#memberEmail").val(),
+				memberPassword : $("#memberPassword").val(),
+				rememberEmail : rememberEmail
+		 		},
+		contentType : 'application/x-www-form-urlencoded;charset=utf-8',
+		success : function(result){
+			// 중복 검사 후 나오는 결과 에러박스에 출력
+			if(result == "N"){
+	        		$('.error_box.login').html("존재하는 회원이 아니거나 비밀번호가 일치하지 않습니다.");
+				
+				}else{
+				// 결과가 result = "Y"이면 로그인 성공 -> loginMove.do로 이동
+	        		document.loginForm.submit();
+				}
+		},
+		error : function(err){
+			alert(err);
+			console.log(err);
+		}
+		});//end of ajax
 	
 }); //end of #btnLogin 
 
@@ -302,12 +304,19 @@ $('#btnLogin').click(function(){
 	[ 비밀번호 재설정 페이지(1) ]
 	비밀번호 찾기 버튼 클릭
 */
-let ramdom;
+let ramdom; // Ajax로 넘어올 인증번호를 담을 변수
 $('#btn_emailSend').click(function(){
-	
-	
-	
-	// 인증번호 전송
+
+	/* 이메일 */
+	if($('#memberEmail').val() == ''){
+		$('label[for="memberEmail"] .error_box').html(blank);
+		$('#memberEmail').focus();
+    		return;
+		}else{
+		$('label[for="memberEmail"] .error_box').html("");
+		}	
+
+	// 입력한 이메일로 인증번로를 전송한다
  	  $.ajax({
     	type : 'post',
     	url : 'emailSend.do',
@@ -318,26 +327,25 @@ $('#btn_emailSend').click(function(){
     		ramdom = result;
     	},
     	error : function(err){
-	        
 			alert('실패');
     		console.log(err);
     	}
-    }); //end of ajax
-
-})
+    }); //end of Ajax
+}); //end of $('#btn_emailSend').click
 
 
 $('#btnPwSearch').click(function(){
-	
-	// input에 입력된 값을 공백제거하고 변수에 담기
-	var authenticationNumber = $.trim($("#authenticationNumber").val());
+
+	// input에 입력된 값을 변수에 담기
+	var randomMessage = $("#randomMessage").val();
 	
 	// 인증번호와 입력한 문자열이 같을 때 폼 전송
-	if(ramdom === authenticationNumber){
+	if(ramdom == randomMessage){
 		document.pwSearchForm.submit();
+		alert("인증 성공!");
 	}else{
 		$('.error_box.pwSearch').html("인증번호가 일치하지 않습니다.");
-	}
+	}// end of if
 	
 }) // end of #btnPwSearch
 
@@ -389,13 +397,13 @@ $('#btnPwChange').click(function(){
 
 $('#btnMemberUpdate').click(function(){
 	
-	// input에 입력된 값을 공백제거하고 변수에 담기
-	var memberNickname = $.trim($("#memberNickname").val());
-	var memberPassword = $.trim($("#memberPassword").val());
-	var passwordCheck = $.trim($("#passwordCheck").val());
-	var memberName = $.trim($("#memberName").val());
-	var memberBirth = $.trim($("#memberBirth").val());
-	var memberTel = $.trim($("#memberTel").val());
+	// input에 입력된 값을 변수에 담기
+	var memberNickname = $("#memberNickname").val();
+	var memberPassword = $("#memberPassword").val();
+	var passwordCheck = $("#passwordCheck").val();
+	var memberName = $("#memberName").val();
+	var memberBirth = $("#memberBirth").val();
+	var memberTel = $("#memberTel").val();
 	
 	
 	/* 닉네임 */

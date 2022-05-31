@@ -57,13 +57,9 @@ public class MemberController {
 	@RequestMapping("memberInsert.do")
 	public String memberInsert(MemberVO vo) {
 		
-		// 비밀번호 암호화 추가(테스트) - DB 컬럼 변경
-		String password = vo.getMemberPassword();
-		
-		
-		
-		memberService.memberInsert(vo);
-		memberService.memberDefaultList(vo);
+		memberService.memberInsert(vo); 
+		// 회원가입과 동시에 디폴트 마이 리스트도 생성	
+		memberService.memberDefaultList(vo); 
 		
 		return "redirect:loginForm.do";
 
@@ -103,31 +99,33 @@ public class MemberController {
 	@ResponseBody
 	public String loginCheck(MemberVO vo, HttpSession session){
 		MemberVO result = memberService.loginCheck(vo);
-		String message = "";
+		
+		String message = "";	// 이메일 사용 가능 여부를 담을 변수
+		
 		if(result == null){
 			System.out.println("로그인 실패");
 			message = "N";
-			return message;
 		}else{
-				System.out.println("*******로그인 성공********");
+				System.out.println(result.getMemberNickname()+"님 로그인 성공");
+				
+				// 세션에 필요한 회원의 정보를 저장한다
 				session.setAttribute("lognick", result.getMemberNickname());
 				session.setAttribute("logemail", result.getMemberEmail());
 				session.setAttribute("admin", result.getMemberAdmin());
 				session.setMaxInactiveInterval(60*60*24);
-				return message;
-			}//end of if
+		}//end of if
 
-		}//end of loginCheck()
+		return message;
+	}//end of loginCheck()
 	
-	/** 로그인 성공 후 페이지 이동
-	 * @param HttpSession session -> 세션에 저장된 이메일 값 가져오기
+	/** 로그인 성공 후 쿠키 저장 혹은 페이지 이동
+	 * @param 
+	 * 		 - MemberVO 로그인 한 이메일이 넘어옴
 	 * @return main.do로 이동
 	 */
 	@RequestMapping("loginMove")
 	public String loginMove(MemberVO vo,HttpServletRequest request, HttpServletResponse response) {
-			HttpSession session = request.getSession();
-			System.out.println(session.getAttribute("logemail")+"로그인");
-			System.out.println(vo.isRememberEmail()+"***********확인");
+
 			if(vo.isRememberEmail()) {
 				// 체크박스에 체크가 되어있다면
 				Cookie[] getCookie = request.getCookies();
@@ -147,8 +145,7 @@ public class MemberController {
 					rememberEmail.setMaxAge(60*60*24*30); 	// 30일 지정
 					response.addCookie(rememberEmail);
 					
-				}//end of if
-				
+				}//end of if - 쿠키가 저장되어 있는지 확인
 				
 			}else {
 				// 체크 박스에 체크가 안되어 있을 때 
@@ -161,9 +158,8 @@ public class MemberController {
 				}//end of if - 쿠키값이 null값인지 검사
 			}//end of if - 체크박스에 체크가 되어있는지
 			
-			System.out.println(session.getAttribute("logemail")+"***********확인하기 입니다.22222");
 			return "redirect:main.do";
-	}
+	}// end of loginMove()
 
 
 	/** main 페이지에서 .login-btn 버튼을 눌렀을 때
@@ -172,7 +168,7 @@ public class MemberController {
 	 * 		- 세션에 로그인 정보 O : 마이페이지(회원정보)로 이동
 	 */
 	@RequestMapping("login.do")
-	public String login(HttpServletRequest request, HttpServletResponse response) {
+	public String login(HttpServletRequest request) {
 		HttpSession session = request.getSession();
 		if(session.getAttribute("lognick") == null) {
 			return "redirect:loginForm.do";
@@ -190,21 +186,25 @@ public class MemberController {
 	
 
 
-	/** 비밀번호 찾기
-	 * 	- 사용자가 입력한 정보가 DB에 있는지 확인
+	/** 비밀번호 찾기 (이메일 인증)
+	 * 	- 사용자가 입력한 이메일로 인증 번호를 발송
+	 * @param	MemberVO vo 
+	 * @return	랜덤으로 생성한 10자리 인증 번호
 	 */
 	@RequestMapping(value="emailSend.do", produces="application/text;charset=utf-8")
 	@ResponseBody
 	public String emailSend(MemberVO vo) {
 		
+		// 발신자의 메일 계정과 비밀번호 설정
 		final String user = "memp35@naver.com";
 		final String password = "UYMTWG2KVGBH";
-		StringBuffer sb = new StringBuffer();	// 인증번호를 담을 변수
+		
+		StringBuffer randomMessage = new StringBuffer();	// 인증번호를 담을 변수
 		
 		
 		// 인증번호 변수
 		
-		// SMTP 서버 정보를 설정함
+		// Property에 SMTP 서버 정보 설정
 		Properties prop = new Properties();
 		prop.put("mail.smtp.host", "smtp.naver.com"); 
 		prop.put("mail.smtp.port", 587); 
@@ -212,76 +212,79 @@ public class MemberController {
 		prop.put("mail.smtp.ssl.enable", "false"); 
 		prop.put("mail.smtp.ssl.trust", "smtp.naver.com");
 		
-      Session session = Session.getDefaultInstance(prop, new javax.mail.Authenticator() {
-            protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(user, password);
-            }
-        });
-      
-      try {
-          MimeMessage message = new MimeMessage(session);
-          message.setFrom(new InternetAddress(user));
+		
+		// SMTP 서버정보와 사용자 정보를 기반으로 Session 클래스의 인스턴스 생성
+		Session session = Session.getDefaultInstance(prop, new javax.mail.Authenticator() {
+				protected PasswordAuthentication getPasswordAuthentication() {
+					return new PasswordAuthentication(user, password);
+				}//end of getPasswordAuthentication()
+        	});//end of getDefaultInstance()
+	      
+	    try {
+	    	  // Message 클래스의 객체를 사용하여 수신자와 내용, 제목의 메시지를 작성한다.
+	          MimeMessage message = new MimeMessage(session);
+	          
+	          message.setFrom(new InternetAddress(user));
+	
+	          //수신자메일주소
+	          message.addRecipient(Message.RecipientType.TO, new InternetAddress(vo.getMemberEmail())); 
+	
+	          // Subject - 메일 제목
+	          message.setSubject("먹생먹사 비밀번호 찾기 인증번호입니다.");
 
-          //수신자메일주소
-          message.addRecipient(Message.RecipientType.TO, new InternetAddress(vo.getMemberEmail())); 
-
-          // Subject - 제목
-          message.setSubject("먹생먹사 비밀번호 찾기 인증번호입니다.");
-          
-
-
-
-          char[] cert = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 
-                  'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 
-                  'Y', 'Z', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0' };
-      		
-          Random random = new Random(System.currentTimeMillis());
-
-          for(int i=0; i<10; i++) {	// 인증번호는 10자리
-
-        	  sb.append(cert[random.nextInt(cert.length)]);
-
-          }	
-
-          
-          // Text - 내용
-          message.setText("인증번호는 [ " + sb.toString() + " ] 입니다.");
-
-          // send the message
-          Transport.send(message);
-          System.out.println("메시지 전송 성공");
-      } catch (AddressException e) {
-          e.printStackTrace();
-      } catch (MessagingException e) {
-          e.printStackTrace();
-      }
+	
+	          // 알파벳과 숫자를 혼합하여 10자리의 랜덤 문자열을 만든다
+	          char[] characterTable = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'
+	        		  		,'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X'
+	        		  		,'Y', 'Z', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0' };
+	          
+	          // characterTable의 길이만큼 랜덤의 인덱스 번호를 추출하기 위함
+	          Random random = new Random(System.currentTimeMillis());
+	
+	          for(int i=0; i<10; i++) {	// 인증번호는 10자리
+	        	  
+	        	  randomMessage.append(characterTable[random.nextInt(characterTable.length)]);
+	
+	          }	// end of for 
+		
+	          // Text - 전송 될 메시지의 내용
+	          message.setText("인증번호는 [ " + randomMessage.toString() + " ] 입니다.");
+	
+	          // 메시지 전송
+	          Transport.send(message);
+	          System.out.println("메시지 전송 성공");
+	          
+		      } catch (AddressException e) {
+		          e.printStackTrace();
+		      } catch (MessagingException e) {
+		          e.printStackTrace();
+		      }// end of try~catch
 		
 		
-		return sb.toString();
-		
+		return randomMessage.toString();
 	}//end of pwSearch()
 	
 	
 	@RequestMapping("pwSearch.do")
-	public String pwSearch(MemberVO vo, HttpSession session) {
+	public String pwSearch(MemberVO vo) {
 
-		/*	존재하는 회원이면 해당 이메일을 세션에 저장
+		/*	존재하는 회원이면 해당 이메일을 파라메터로 전송
 				- 추후에 저장한 이메일을 비밀번호 재설정에서 사용함 */
-		session.setAttribute("email", vo.getMemberEmail());
-		return "redirect:pwChangeForm.do";
+		
+		return "redirect:pwChangeForm.do?memberEmail="+vo.getMemberEmail();
 	}//end of pwSearch()
 
 
 
 	/** 비밀번호 재설정
 	 *  - 로그인 -> 비밀번호 찾기 (회원정보 검색) -> 비밀번호 재설정 페이지가 나옴
-	 * @param MemberVO vo : 패스워드 입력값이 넘어옴
-	 * 		- session을 통해서 이메일 정보를 가져옴
+	 * @param MemberVO vo 
+	 * 			- 이전에 입력한 이메일
+	 * 			- 새롭게 변경된 패스워드 입력값
 	 * @return 비밀번호 변경이 완료되면 로그인폼 페이지로 넘어감
 	 */
 	@RequestMapping("pwChange.do")
-	public String pwChange(MemberVO vo, HttpSession session) {
-		vo.setMemberEmail(session.getAttribute("email").toString());
+	public String pwChange(MemberVO vo) {
 		memberService.pwChange(vo);
 
 		return "redirect:loginForm.do";
@@ -294,8 +297,8 @@ public class MemberController {
 	 * - DB에서 이메일이 동일한 회원의 정보 찾기
 	 * 		- HttpSession 로그인한 이메일의 정보
 	 * 		- Model 화면에 출력하기 위해
-	 * 		- MemberVO member 결과로 나온 레코드의 정보를 담음
 	 * 		- MemberVO vo 이메일의 정보를 담고 mapper로 이동
+	 * 		- MemberVO member 결과로 나온 레코드의 정보를 담음
 	 * @return
 	 */
 	@RequestMapping("mypageMember.do")
@@ -332,14 +335,15 @@ public class MemberController {
 
 
 	/** 로그아웃
-	 * 	- 세션에 저장된 회원의 이메일과 닉네임을 삭제
+	 * 	- 세션에 속해있는 모든 값들을 제거
 	 * @return 
-	 * 		- 메인
+	 * 		- 메인 페이지로 이동
 	 */
-	@RequestMapping(value="logout.do", method=RequestMethod.GET)
+	@RequestMapping(value="logout.do")
 	public String logout(HttpServletRequest request) {
 		HttpSession session = request.getSession();
 			System.out.println(session.getAttribute("logemail") + "님 로그아웃");
+			
 			session.invalidate();
 			
 			return "redirect:main.do";
@@ -351,18 +355,18 @@ public class MemberController {
 	 * 	- DB에 저장된 회원의 레코드를 삭제
 	 * @param MemberVO vo
 	 * 			- input hidden으로 넘어온 이메일과 패스워드 정보로 회원의 레코드 삭제
-	 * 			- 세션에 저장된 로그인 정보 삭제
+	 * 			- 세션에 속해있는 모든 값들을 제거
 	 * @return 메인페이지로 이동
 	 */
 	@RequestMapping("memberDelete.do")
 	public String memberDelete(MemberVO vo,HttpServletRequest request,HttpServletResponse response) {
 		memberService.memberDelete(vo);
-		// 쿠키가 있다면
 		Cookie[] getCookie = request.getCookies();
 		if(getCookie != null) {
 			for(Cookie c : getCookie) {
 				String value = c.getValue();
 				
+				// 쿠키값이 있고 탈퇴한 이메일과 값이 동일하다면 쿠키 제거 
 				if(value.equals(vo.getMemberEmail())) {
 					Cookie removeEmail = new Cookie("rememberEmail", null);
 					removeEmail.setMaxAge(0);
@@ -376,7 +380,6 @@ public class MemberController {
 		
 		session.invalidate(); // 세션에 저장된 로그인 정보를 삭제
 		
-
 		return "main";	// 회원 탈퇴 시 메인 페이지로 이동
 
 	}//end of memberDelete()
